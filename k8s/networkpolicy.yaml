@@ -1,0 +1,86 @@
+# Deny all ingress by default within the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: kosmos
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Allow kosmos app to reach dependencies
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kosmos-to-dependencies
+  namespace: kosmos
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kosmos
+      ports:
+        - port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kosmos-to-redis
+  namespace: kosmos
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kosmos
+      ports:
+        - port: 6379
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kosmos-to-neo4j
+  namespace: kosmos
+spec:
+  podSelector:
+    matchLabels:
+      app: neo4j
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kosmos
+      ports:
+        - port: 7687
+        - port: 7474
+---
+# Allow ingress traffic to kosmos app (from ingress controller)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kosmos-ingress
+  namespace: kosmos
+spec:
+  podSelector:
+    matchLabels:
+      app: kosmos
+  policyTypes:
+    - Ingress
+  ingress:
+    - from: []
+      ports:
+        - port: 8000

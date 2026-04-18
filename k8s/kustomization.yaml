@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kosmos
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml.template
+  - redis-deployment.yaml
+  - postgres-statefulset.yaml
+  - neo4j-statefulset.yaml
+  - kosmos-deployment.yaml
+  - kosmos-service.yaml
+  - networkpolicy.yaml
+  - pdb.yaml
+  - hpa.yaml
+  - ingress.yaml

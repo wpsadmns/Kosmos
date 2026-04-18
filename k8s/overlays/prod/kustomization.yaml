@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kosmos
+
+resources:
+  - ../../
+
+patches:
+  - target:
+      kind: Deployment
+      name: kosmos
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 2
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 4Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 8
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 8Gi
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: kosmos-hpa
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 20
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: 100Gi
+  - target:
+      kind: PersistentVolumeClaim
+      name: kosmos-results-pvc
+    patch: |
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: 500Gi
+
+configMapGenerator:
+  - name: kosmos-config-overlay
+    behavior: merge
+    literals:
+      - LOG_LEVEL=INFO
+      - ENABLE_CONCURRENT_OPERATIONS=true
+      - MAX_CONCURRENT_EXPERIMENTS=8
+      - MAX_PARALLEL_HYPOTHESES=5
+      - MAX_CONCURRENT_LLM_CALLS=10
